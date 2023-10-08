@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <h1 className="h1-bold">this is DevOverflow</h1>
+      {/* <p className="h1-bold">this is DevOverflow</p> */}
       <body className={`${inter.variable} ${sepaceGrotesk.variable}`}>
         <ClerkProvider
           appearance={{
