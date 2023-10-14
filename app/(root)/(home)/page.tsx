@@ -1,3 +1,4 @@
+import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -14,7 +15,14 @@ export default function Home() {
       </div>
 
       <div className="max-sm: mt-11 flex flex-col justify-between gap-5 sm:items-center">
-        LocalSearchbar Filters
+        <LocalSearchbar
+          route="/"
+          iconPosition="left"
+          imgSrc="/assets/icons/search.svg"
+          placeHolder="Search for questions"
+          otherClasses="flex-1"
+        />
+        Filters
       </div>
     </>
   );
