@@ -20,6 +20,7 @@ import { Button } from "../ui/button";
 import { QuestionSchema } from "@/lib/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
+import { createQuestion } from "@/lib/actions/question.action";
 
 const type: any = "create";
 const Question = () => {
@@ -37,11 +38,12 @@ const Question = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof QuestionSchema>) {
+  async function onSubmit(values: z.infer<typeof QuestionSchema>) {
     setIsSubmitting(true);
     try {
       // make async call to api to crate a new question
       // then navigate to home page
+      await createQuestion({});
     } catch (err) {
       console.log(err);
     } finally {
@@ -125,6 +127,10 @@ const Question = () => {
                   onInit={(evt, editor) => {
                     // @ts-ignore
                     editorRef.current = editor;
+                  }}
+                  onBlur={field.onBlur}
+                  onEditorChange={(content) => {
+                    field.onChange(content);
                   }}
                   initialValue=""
                   init={{
