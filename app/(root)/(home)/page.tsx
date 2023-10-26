@@ -5,43 +5,13 @@ import NoResult from "@/components/shared/NoResult";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
+import { getQuestions } from "@/lib/actions/question.action";
 import Link from "next/link";
 
-const questions = [
-  {
-    _id: "1",
-    title: "How to use React Query?",
-    tags: [
-      { _id: "1", name: "react-query" },
-      { _id: "2", name: "react" },
-    ],
-    auther: {
-      _id: "101",
-      name: "abdomo",
-      avatar: "some_avatar_link_1.jpg",
-    },
-    upvotes: 1000000,
-    views: 2,
-    answers: [{ content: "Use the useQuery hook." }],
-    createdAt: new Date("2021-08-01T12:00:00.000Z"),
-  },
-  {
-    _id: "2",
-    title: "How to center a div?",
-    tags: [{ _id: "3", name: "css" }],
-    auther: {
-      _id: "102",
-      name: "abdomo",
-      avatar: "some_avatar_link_2.jpg",
-    },
-    upvotes: 12,
-    views: 4,
-    answers: [{ content: "Use flexbox or CSS Grid." }],
-    createdAt: new Date("2023-08-01T12:00:00.000Z"),
-  },
-];
+export default async function Home() {
+  const result = await getQuestions({});
+  console.log(`result`, result);
 
-export default function Home() {
   return (
     <>
       <div className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row">
@@ -70,18 +40,18 @@ export default function Home() {
 
       <HomeFilters />
       <div className="mt-10 flex w-full flex-col gap-6">
-        {questions.length > 0 ? (
-          questions.map((question) => (
+        {result.length > 0 ? (
+          result.map((question) => (
             <QuestionCard
               key={question._id}
               _id={question._id}
               title={question.title}
               tags={question.tags}
-              auther={question.auther}
+              auther={question.author}
               upvotes={question.upvotes}
               views={question.views}
               answers={question.answers}
-              createdAt={question.createdAt}
+              createdAt={new Date(question.createdAt)}
             />
           ))
         ) : (

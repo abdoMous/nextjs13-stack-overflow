@@ -30,7 +30,7 @@ const QuestionCard = ({
   auther,
   upvotes,
   views,
-  answers,
+  answers = [],
   createdAt,
 }: QuestionProps) => {
   return (
