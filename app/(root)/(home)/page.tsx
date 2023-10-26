@@ -1,4 +1,4 @@
-import QuestionCard, { QuestionProps } from "@/components/cards/QuestionCard";
+import QuestionCard from "@/components/cards/QuestionCard";
 import HomeFilters from "@/components/home/HomeFilters";
 import Filter from "@/components/shared/Filter";
 import NoResult from "@/components/shared/NoResult";
