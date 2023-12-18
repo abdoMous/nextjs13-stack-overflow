@@ -3,15 +3,25 @@ import Metric from "@/components/shared/Metric";
 import ParseHTML from "@/components/shared/ParseHTML";
 import RenderTag from "@/components/shared/RenderTag";
 import { getQuestionById } from "@/lib/actions/question.action";
+import { getUserById } from "@/lib/actions/user.action";
 import { formatAndDivideNumber, formatNumber, getTimestamp } from "@/lib/utils";
+import { auth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 const Page = async ({ params }) => {
-  const result = await getQuestionById({ questionId: params.id });
-  console.log("result=", result);
+  const { userId: clerkId } = auth();
+  let mongoUser;
+  if (clerkId) {
+    mongoUser = await getUserById({ userId: clerkId });
+  }
+
+  const questionId = params.id;
+  const result = await getQuestionById({ questionId });
+  console.log("mongoUser=", mongoUser);
   console.log("is created at a date=" + (result.createdAt instanceof Date));
+
   return (
     <>
       <div className="flex-start w-full flex-col">
@@ -75,7 +85,10 @@ const Page = async ({ params }) => {
         ))}
       </div>
 
-      <Answer />
+      <Answer
+        mongoUserId={JSON.stringify(mongoUser._id)}
+        questionId={JSON.stringify(questionId)}
+      />
     </>
   );
 };

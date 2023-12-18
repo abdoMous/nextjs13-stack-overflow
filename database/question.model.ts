@@ -31,6 +31,12 @@ const QuestionSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
+  answers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Question",
+    },
+  ],
   views: {
     type: Number,
     default: 0,
