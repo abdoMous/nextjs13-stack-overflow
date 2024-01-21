@@ -10,20 +10,12 @@ export async function createAnswer(params: CreateAnswerParams) {
   try {
     connectToDatabase();
     const { content, author, question, path } = params;
-    console.log("createing answer params", params);
 
     const answer = await Answer.create({
       content,
       author,
       question,
     });
-
-    // const answer = new Answer({
-    //   content,
-    //   author,
-    //   question,
-    // });
-    // console.log({ answer });
 
     await Question.findByIdAndUpdate(question, {
       $push: { answers: answer._id },
@@ -42,9 +34,9 @@ export async function getAnswers(params: GetAnswersParams) {
     connectToDatabase();
     const { questionId } = params;
     const answers = await Answer.find({ question: questionId })
-      .populate("auther", "_id clerkId name picture")
+      .populate("author", "_id clerkId name picture")
       .sort({ createdAt: -1 });
-    return answers;
+    return { answers };
   } catch (error) {
     console.error(error);
     throw error;

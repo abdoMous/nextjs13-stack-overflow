@@ -1,7 +1,7 @@
-"use server";
 import { Document, Schema, model, models } from "mongoose";
 
 export interface IAnswer extends Document {
+  question: Schema.Types.ObjectId;
   content: string;
   author: Schema.Types.ObjectId;
   upvotes: Schema.Types.ObjectId[];
