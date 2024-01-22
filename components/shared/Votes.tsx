@@ -1,17 +1,20 @@
 "use client";
 
+import { voteAnswer } from "@/lib/actions/answer.action";
+import { voteQuestion } from "@/lib/actions/question.action";
 import { formatAndDivideNumber } from "@/lib/utils";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 interface Props {
-  type: string;
+  type: "Question" | "Answer";
   itemId: string;
   userId: string;
   upvotes: number;
-  hasUpvoted: boolean;
+  hasupVoted: boolean;
   downvotes: number;
-  hasDownvoted: boolean;
+  hasdownVoted: boolean;
   hasSaved?: boolean;
 }
 
@@ -20,14 +23,40 @@ const Votes = ({
   itemId,
   userId,
   upvotes,
-  hasUpvoted,
+  hasupVoted,
   downvotes,
-  hasDownvoted,
+  hasdownVoted,
   hasSaved,
 }: Props) => {
+  const pathname = usePathname();
+  // const router = useRouter();
+
   const handleSave = async () => {};
 
-  const handleVote = async (action: string) => {};
+  const handleVote = async (voteType: "upvote" | "downvote") => {
+    if (!userId) return;
+    if (type === "Question") {
+      await voteQuestion({
+        questionId: JSON.parse(itemId),
+        userId: JSON.parse(userId),
+        voteType,
+        hasupVoted,
+        hasdownVoted,
+        path: pathname,
+      });
+    } else if (type === "Answer") {
+      await voteAnswer({
+        answerId: JSON.parse(itemId),
+        userId: JSON.parse(userId),
+        voteType,
+        hasupVoted,
+        hasdownVoted,
+        path: pathname,
+      });
+    }
+
+    // todo: show a toast
+  };
 
   return (
     <div className="flex gap-5">
@@ -35,7 +64,7 @@ const Votes = ({
         <div className="flex-center gap-1.5">
           <Image
             src={
-              hasUpvoted
+              hasupVoted
                 ? "/assets/icons/upvoted.svg"
                 : "/assets/icons/upvote.svg"
             }
@@ -54,7 +83,7 @@ const Votes = ({
         <div className="flex-center gap-1.5">
           <Image
             src={
-              hasDownvoted
+              hasdownVoted
                 ? "/assets/icons/downvoted.svg"
                 : "/assets/icons/downvote.svg"
             }
@@ -71,18 +100,20 @@ const Votes = ({
           </div>
         </div>
       </div>
-      <Image
-        src={
-          hasSaved
-            ? "/assets/icons/star-filled.svg"
-            : "/assets/icons/star-red.svg"
-        }
-        width={18}
-        height={18}
-        alt="star"
-        className="cursor-pointer"
-        onClick={handleSave}
-      />
+      {type === "Question" && (
+        <Image
+          src={
+            hasSaved
+              ? "/assets/icons/star-filled.svg"
+              : "/assets/icons/star-red.svg"
+          }
+          width={18}
+          height={18}
+          alt="star"
+          className="cursor-pointer"
+          onClick={handleSave}
+        />
+      )}
     </div>
   );
 };

@@ -1,7 +1,12 @@
 "use server";
 
 import Answer from "@/database/answer.model";
-import { CreateAnswerParams, GetAnswersParams } from "./shared.types";
+import {
+  AnswerVoteParams,
+  CreateAnswerParams,
+  GetAnswersParams,
+  QuestionVoteParams,
+} from "./shared.types";
 import Question from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import { revalidatePath } from "next/cache";
@@ -37,6 +42,53 @@ export async function getAnswers(params: GetAnswersParams) {
       .populate("author", "_id clerkId name picture")
       .sort({ createdAt: -1 });
     return { answers };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function voteAnswer(params: AnswerVoteParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, userId, voteType, hasupVoted, hasdownVoted, path } =
+      params;
+    let updateQuery = {};
+
+    if (voteType === "upvote") {
+      if (hasupVoted) {
+        updateQuery = { $pull: { upvotes: userId } };
+      } else if (hasdownVoted) {
+        updateQuery = {
+          $pull: { downvotes: userId },
+          $push: { upvotes: userId },
+        };
+      } else {
+        updateQuery = { $addToSet: { upvotes: userId } };
+      }
+    } else if (voteType === "downvote") {
+      if (hasdownVoted) {
+        updateQuery = { $pull: { downvotes: userId } };
+      } else if (hasupVoted) {
+        updateQuery = {
+          $pull: { upvotes: userId },
+          $push: { downvotes: userId },
+        };
+      } else {
+        updateQuery = { $addToSet: { downvotes: userId } };
+      }
+    }
+
+    const answer = await Answer.findByIdAndUpdate(answerId, updateQuery, {
+      new: true,
+    });
+
+    if (!answer) {
+      throw new Error("Question not found");
+    }
+    // todo increment author's reputation
+    revalidatePath(path);
   } catch (error) {
     console.error(error);
     throw error;
