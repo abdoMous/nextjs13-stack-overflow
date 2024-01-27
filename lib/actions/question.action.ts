@@ -7,10 +7,12 @@ import {
   CreateQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsParams,
+  GetSavedQuestionsParams,
   QuestionVoteParams,
 } from "./shared.types";
 import User from "@/database/user.model";
 import { revalidatePath } from "next/cache";
+import { FilterQuery } from "mongoose";
 
 export async function getQuestions(params: GetQuestionsParams) {
   // const { page = 1, pageSize = 10, searchQuery = "", filter = "" } = params;
@@ -23,6 +25,40 @@ export async function getQuestions(params: GetQuestionsParams) {
       .sort({ createdAt: -1 });
 
     return questions;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getSavedQuestions(params: GetSavedQuestionsParams) {
+  // const { page = 1, pageSize = 10, searchQuery = "", filter = "" } = params;
+  try {
+    connectToDatabase();
+
+    const { clerkId, page = 1, pageSize = 10, filter, searchQuery } = params;
+
+    const query: FilterQuery<typeof Question> = searchQuery
+      ? { title: { $regex: new RegExp(searchQuery, "i") } }
+      : {};
+
+    const user = await User.findOne({ clerkId }).populate({
+      path: "saved",
+      match: query,
+      options: {
+        sort: { createdAt: -1 },
+      },
+      populate: [
+        { path: "tags", model: Tag, select: "_id name" },
+        { path: "author", model: User, select: "_id clerkId name picture" },
+      ],
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user.saved;
   } catch (error) {
     console.error(error);
     return [];
