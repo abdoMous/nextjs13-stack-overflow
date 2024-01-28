@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { date } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,4 +60,10 @@ export const formatAndDivideNumber = (num: number): string => {
   } else {
     return num.toString();
   }
+};
+
+export const getMonthAndYear = (date: Date): string => {
+  const month = date.toLocaleString("default", { month: "long" });
+  const year = date.getFullYear();
+  return `${month} ${year}`;
 };

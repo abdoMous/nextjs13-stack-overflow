@@ -6,6 +6,7 @@ import {
   CreateUserParams,
   DeleteUserParams,
   GetAllUsersParams,
+  GetUserByIdParams,
   ToggleSaveQuestionParams,
   UpdateUserParams,
 } from "./shared.types";
@@ -119,6 +120,25 @@ export async function toggleSaveQuestion(params: ToggleSaveQuestionParams) {
     }
 
     revalidatePath(path);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function getUserInfo(params: GetUserByIdParams) {
+  try {
+    connectToDatabase();
+    const { userId } = params;
+
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const totalQuestions = await Question.countDocuments({ author: user._id });
+    const totalAnswers = await Question.countDocuments({ author: user._id });
+    return { user, totalQuestions, totalAnswers };
   } catch (error) {
     console.error(error);
     throw error;
