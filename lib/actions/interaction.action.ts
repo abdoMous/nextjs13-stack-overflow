@@ -1,10 +1,8 @@
-"user server";
+"use server";
 
 import { ViewQuestionParams } from "./shared.types";
 import { connectToDatabase } from "../mongoose";
 import Question from "@/database/question.model";
-import User from "@/database/user.model";
-import { Inter } from "next/font/google";
 import Interaction from "@/database/interaction.model";
 
 export async function viewQuestion(params: ViewQuestionParams) {
