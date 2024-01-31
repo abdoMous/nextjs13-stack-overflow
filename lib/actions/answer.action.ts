@@ -4,6 +4,7 @@ import Answer from "@/database/answer.model";
 import {
   AnswerVoteParams,
   CreateAnswerParams,
+  DeleteAnswerParams,
   GetAnswersParams,
   GetUserStatsParams,
   QuestionVoteParams,
@@ -11,6 +12,7 @@ import {
 import Question from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import { revalidatePath } from "next/cache";
+import Interaction from "@/database/interaction.model";
 
 export async function createAnswer(params: CreateAnswerParams) {
   try {
@@ -110,6 +112,25 @@ export async function getUserAnswers(params: GetUserStatsParams) {
       .populate("author", "_id clerkId name picture");
 
     return { totalAnswers, answers: userAnswers };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function deleteAnswer(params: DeleteAnswerParams) {
+  try {
+    connectToDatabase();
+    const { answerId, path } = params;
+
+    await Answer.findByIdAndDelete(answerId);
+    await Question.updateMany(
+      { answers: answerId },
+      { $pull: { answers: answerId } }
+    );
+    await Interaction.deleteMany({ answer: answerId });
+
+    revalidatePath(path);
   } catch (error) {
     console.error(error);
     throw error;

@@ -5,6 +5,7 @@ import { connectToDatabase } from "../mongoose";
 import Tag, { ITag } from "@/database/tag.model";
 import {
   CreateQuestionParams,
+  DeleteQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsByTagIdParams,
   GetQuestionsParams,
@@ -15,6 +16,8 @@ import {
 import User from "@/database/user.model";
 import { revalidatePath } from "next/cache";
 import { FilterQuery } from "mongoose";
+import Answer from "@/database/answer.model";
+import Interaction from "@/database/interaction.model";
 
 export async function getQuestions(params: GetQuestionsParams) {
   // const { page = 1, pageSize = 10, searchQuery = "", filter = "" } = params;
@@ -222,3 +225,32 @@ export async function getUserQuestions(params: GetUserStatsParams) {
     throw error;
   }
 }
+
+export async function deleteQuestion(params: DeleteQuestionParams) {
+  try {
+    connectToDatabase();
+    const { questionId, path } = params;
+
+    await Question.findByIdAndDelete(questionId);
+    await Answer.deleteMany({ question: questionId });
+    await Interaction.deleteMany({ question: questionId });
+    await Tag.updateMany(
+      { questions: questionId },
+      { $pull: { questions: questionId } }
+    );
+
+    revalidatePath(path);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+// export async function getAllUsers(params: GetAllUsersParams) {
+//   try {
+//     connectToDatabase();
+//   } catch (error) {
+//     console.error(error);
+//     throw error;
+//   }
+// }
