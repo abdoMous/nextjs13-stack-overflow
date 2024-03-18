@@ -30,6 +30,7 @@
     "mongoose": "^7.6.3",
     "next": "latest",
     "prismjs": "^1.29.0",
+    "query-string": "^8.2.0",
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "^7.47.0",

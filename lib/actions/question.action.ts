@@ -19,16 +19,44 @@ import { revalidatePath } from 'next/cache';
 import { FilterQuery } from 'mongoose';
 import Answer from '@/database/answer.model';
 import Interaction from '@/database/interaction.model';
+import { title } from 'process';
 
 export async function getQuestions(params: GetQuestionsParams) {
     // const { page = 1, pageSize = 10, searchQuery = "", filter = "" } = params;
     try {
+        const { searchQuery, filter } = params;
+        const query: FilterQuery<typeof Question> = {};
+        if (searchQuery) {
+            query.$or = [
+                { title: { $regex: new RegExp(searchQuery, 'i') } },
+                { content: { $regex: new RegExp(searchQuery, 'i') } },
+            ];
+        }
+
+        let sortOption = {};
+        switch (filter) {
+            case 'newest':
+                sortOption = { createdAt: -1 };
+                break;
+            // case 'recommended':
+            //     break;
+            case 'frequent':
+                sortOption = { views: -1 };
+                break;
+            case 'unanswered':
+                query.answers = { $size: 0 };
+                break;
+
+            default:
+                break;
+        }
+
         connectToDatabase();
-        const questions = await Question.find({})
+        const questions = await Question.find(query)
             .maxTimeMS(100000)
             .populate({ path: 'tags', model: Tag })
             .populate({ path: 'author', model: User })
-            .sort({ createdAt: -1 });
+            .sort(sortOption);
 
         return questions;
     } catch (error) {
@@ -44,8 +72,8 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
 
         const {
             clerkId,
-            page = 1,
-            pageSize = 10,
+            // page = 1,
+            // pageSize = 10,
             filter,
             searchQuery,
         } = params;
@@ -54,11 +82,33 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
             ? { title: { $regex: new RegExp(searchQuery, 'i') } }
             : {};
 
+        let sortOption = {};
+        switch (filter) {
+            case 'most_recent':
+                sortOption = { createAt: -1 };
+                break;
+            case 'oldest':
+                sortOption = { createAt: 1 };
+                break;
+            case 'most_voted':
+                sortOption = { upvotes: -1 };
+                break;
+            case 'most_viewed':
+                sortOption = { views: -1 };
+                break;
+            case 'most_answered':
+                sortOption = { answers: -1 };
+                break;
+            default:
+                sortOption = { createAt: -1 };
+                break;
+        }
+
         const user = await User.findOne({ clerkId }).populate({
             path: 'saved',
             match: query,
             options: {
-                sort: { createdAt: -1 },
+                sort: sortOption,
             },
             populate: [
                 { path: 'tags', model: Tag, select: '_id name' },
@@ -74,7 +124,7 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
             throw new Error('User not found');
         }
 
-        return user.saved;
+        return { questions: user.saved };
     } catch (error) {
         console.error(error);
         return [];

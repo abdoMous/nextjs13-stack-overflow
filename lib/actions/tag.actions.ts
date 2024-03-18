@@ -4,6 +4,7 @@ import User from '@/database/user.model';
 import { connectToDatabase } from '../mongoose';
 import { GetAllTagsParams, GetTopInteractedTagsParams } from './shared.types';
 import Tag from '@/database/tag.model';
+import { FilterQuery } from 'mongoose';
 
 export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
     try {
@@ -30,8 +31,35 @@ export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
 export async function getAllTags(params: GetAllTagsParams) {
     try {
         connectToDatabase();
+        const { searchQuery, filter } = params;
 
-        const tags = await Tag.find({});
+        const query: FilterQuery<typeof Tag> = {};
+
+        if (searchQuery) {
+            query.$or = [
+                { name: { $regex: new RegExp(searchQuery, 'i') } },
+                { description: { $regex: new RegExp(searchQuery, 'i') } },
+            ];
+        }
+
+        let sortOptions = {};
+        switch (filter) {
+            case 'popular':
+                sortOptions = { questions: -1 };
+                break;
+            case 'recent':
+                sortOptions = { createdAt: -1 };
+                break;
+            case 'name':
+                sortOptions = { name: -1 };
+                break;
+            case 'old':
+                sortOptions = { createdAt: 1 };
+                break;
+            default:
+        }
+
+        const tags = await Tag.find(query).sort(sortOptions);
         return { tags };
     } catch (error) {
         console.error(error);
